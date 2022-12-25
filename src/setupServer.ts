@@ -12,6 +12,8 @@ import { config } from '@root/config';
 import { Server } from 'socket.io';
 import { createClient } from 'redis';
 import { createAdapter } from '@socket.io/redis-adapter';
+import { CustomError, IErrorResponse } from '@global/helpers/error-handler';
+import { SocketIOPostHandler, socketIOPostObject } from '@global/sockets/post';
 
 const SERVER_PORT = 5000;
 const log: Logger = config.createLogger('server');
@@ -35,9 +37,9 @@ export class NdpMediaServer {
     app.use(
       cookierSession({
         name: 'session',
-        keys: ['test1', 'test2'],
+        keys: [config.SECRET_KEY_ONE!, config.SECRET_KEY_TWO!],
         maxAge: 24 * 7 * 3600000,
-        secure: false
+        secure: config.NODE_ENV !== 'development'
       })
     );
     app.use(hpp());
@@ -58,14 +60,22 @@ export class NdpMediaServer {
     app.use(urlencoded({ extended: true, limit: '50mb' }));
   }
 
-  private routeMiddleware(app: Application): void {}
+  private routeMiddleware(app: Application): void {
+
+  }
 
   private globalErrorHandler(app: Application): void {
     app.all('*', (req: Request, res: Response) => {
       res.status(HTTP_STATUS.NOT_FOUND).json({ message: `${req.originalUrl} not found` });
     });
 
-    app.use()
+    app.use((error: IErrorResponse, _req: Request, res: Response, next: NextFunction) => {
+      log.error(error);
+      if (error instanceof CustomError) {
+        return res.status(error.statusCode).json(error.serializeErrors());
+      }
+      next();
+    });
   }
 
   private async startServer(app: Application): Promise<void> {
@@ -95,13 +105,14 @@ export class NdpMediaServer {
 
   private startHttpServer(httpServer: http.Server): void {
     log.info(`Server has started with process ${process.pid}`);
-
     httpServer.listen(SERVER_PORT, () => {
       log.info(`Server running on port ${SERVER_PORT}`);
     });
   }
 
   private socketIOConnections(io: Server): void {
-    log.info('socketIOConnections');
+    const postSocketHandler: SocketIOPostHandler = new SocketIOPostHandler(io);
+
+    postSocketHandler.listen();
   }
 }
