@@ -14,6 +14,7 @@ import { createClient } from 'redis';
 import { createAdapter } from '@socket.io/redis-adapter';
 import { CustomError, IErrorResponse } from '@global/helpers/error-handler';
 import { SocketIOPostHandler, socketIOPostObject } from '@global/sockets/post';
+import applicationRoutes from '@root/routes';
 
 const SERVER_PORT = 5000;
 const log: Logger = config.createLogger('server');
@@ -61,7 +62,7 @@ export class NdpMediaServer {
   }
 
   private routeMiddleware(app: Application): void {
-
+    applicationRoutes(app);
   }
 
   private globalErrorHandler(app: Application): void {
