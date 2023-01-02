@@ -13,7 +13,7 @@ import { Server } from 'socket.io';
 import { createClient } from 'redis';
 import { createAdapter } from '@socket.io/redis-adapter';
 import { CustomError, IErrorResponse } from '@global/helpers/error-handler';
-import { SocketIOPostHandler, socketIOPostObject } from '@global/sockets/post';
+import { SocketIOPostHandler, socketIOPostObject } from '@socket/post';
 import applicationRoutes from '@root/routes';
 
 const SERVER_PORT = 5000;

@@ -8,9 +8,9 @@ Accept: application/json
 withCredentials: true
 
 {
-  "username": "manny2",
+  "username": "manny4",
   "password": "qwerty",
-  "email": "manny2@test.com",
+  "email": "manny4@test.com",
   "avatarColor": "blue",
   "avatarImage": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAA0gAAAMyAQMAAABtkHM/AAAABlBMVEUAAAD///+l2Z/dAAAAAXRSTlMAQObYZgAAAAFiS0dEAf8CLd4AAABrSURBVBgZ7cGBAAAAAMOg+1NP4AjVAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAjgBSwwABwrL8wAAAAABJRU5ErkJggg=="
 }
@@ -22,7 +22,7 @@ Accept: application/json
 withCredentials: true
 
 {
-  "username": "manny",
+  "username": "manny3",
   "password": "qwerty"
 }
 
@@ -49,7 +49,7 @@ withCredentials: true
 }
 
 ###
-POST {{baseUrl}}/{{urlPath}}/reset-password/d6b4bdcaca3f93fb5a322ccba5cd3768f76ca5ea
+POST {{baseUrl}}/{{urlPath}}/reset-password/01d0ff6802f91bf17f176136f8cfd01a994b2316
 Content-Type: application/json
 Accept: application/json
 withCredentials: true
