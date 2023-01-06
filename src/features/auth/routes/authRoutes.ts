@@ -1,7 +1,7 @@
 import { Password } from '@auth/controllers/password';
 import { SignOut } from '@auth/controllers/signout';
 import { SignUp } from '@auth/controllers/signup';
-import { SignIn } from '@auth/controllers/singin';
+import { SignIn } from '@auth/controllers/signin';
 import express, { Router } from 'express';
 
 class AuthRoutes {

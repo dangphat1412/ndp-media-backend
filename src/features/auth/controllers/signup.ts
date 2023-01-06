@@ -1,21 +1,20 @@
-import HTTP_STATUS from 'http-status-codes';
-import { UploadApiResponse } from 'cloudinary';
-import { IUserDocument } from './../../user/interfaces/user.interface';
-import JWT from 'jsonwebtoken';
-import { omit } from 'lodash';
-import { signupSchema } from '@auth/schemes/signup';
-import { joiValidation } from '@global/decorators/joi-validation.decorators';
-import { UserCache } from '@service/redis/user.cache';
-import { Request, Response } from 'express';
-import { authService } from '@service/db/auth.service';
-import { BadRequestError } from '@global/helpers/error-handler';
-import { IAuthDocument, ISignUpData } from '@auth/interfaces/auth.interface';
 import { ObjectId } from 'mongodb';
+import { Request, Response } from 'express';
+import { joiValidation } from '@global/decorators/joi-validation.decorators';
+import { signupSchema } from '@auth/schemes/signup';
+import { IAuthDocument, ISignUpData } from '@auth/interfaces/auth.interface';
+import { authService } from '@service/db/auth.service';
 import { Helpers } from '@global/helpers/helpers';
-import { config } from '@root/config';
+import { UploadApiResponse } from 'cloudinary';
 import { uploads } from '@global/helpers/cloudinary-upload';
+import HTTP_STATUS from 'http-status-codes';
+import { IUserDocument } from '@user/interfaces/user.interface';
+import { UserCache } from '@service/redis/user.cache';
+import JWT from 'jsonwebtoken';
 import { authQueue } from '@service/queues/auth.queue';
 import { userQueue } from '@service/queues/user.queue';
+import { config } from '@root/config';
+import { BadRequestError } from '@global/helpers/error-handler';
 
 const userCache: UserCache = new UserCache();
 
@@ -27,9 +26,13 @@ export class SignUp {
     if (checkIfUserExist) {
       throw new BadRequestError('Invalid credentials');
     }
+
     const authObjectId: ObjectId = new ObjectId();
     const userObjectId: ObjectId = new ObjectId();
     const uId = `${Helpers.generateRandomIntegers(12)}`;
+    // the reason we are using SignUp.prototype.signupData and not this.signupData is because
+    // of how we invoke the create method in the routes method.
+    // the scope of the this object is not kept when the method is invoked
     const authData: IAuthDocument = SignUp.prototype.signupData({
       _id: authObjectId,
       uId,
@@ -40,21 +43,20 @@ export class SignUp {
     });
     const result: UploadApiResponse = (await uploads(avatarImage, `${userObjectId}`, true, true)) as UploadApiResponse;
     if (!result?.public_id) {
-      throw new BadRequestError('File upload: Error occured. Try again.');
+      throw new BadRequestError('File upload: Error occurred. Try again.');
     }
+
     // Add to redis cache
     const userDataForCache: IUserDocument = SignUp.prototype.userData(authData, userObjectId);
-    userDataForCache.profilePicture = `https://res.cloudinary.com/dlwn4tpuz/image/upload/v${result.version}/${userObjectId}`;
+    userDataForCache.profilePicture = `https://res.cloudinary.com/dyamr9ym3/image/upload/v${result.version}/${userObjectId}`;
     await userCache.saveUserToCache(`${userObjectId}`, uId, userDataForCache);
 
     // Add to database
-    omit(userDataForCache, ['uId', 'username', 'email', 'avatarColor', 'password']);
-    authQueue.addAuthUserJob('addAuthUserToDB', { value: userDataForCache });
+    authQueue.addAuthUserJob('addAuthUserToDB', { value: authData });
     userQueue.addUserJob('addUserToDB', { value: userDataForCache });
 
     const userJwt: string = SignUp.prototype.signToken(authData, userObjectId);
     req.session = { jwt: userJwt };
-
     res.status(HTTP_STATUS.CREATED).json({ message: 'User created successfully', user: userDataForCache, token: userJwt });
   }
 

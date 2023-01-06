@@ -1,4 +1,4 @@
-import { IGetPostsQuery, IPostDocument, IQueryComplete, IQueryDeleted } from '@post/interfaces/post.interface';
+import { IPostDocument, IGetPostsQuery, IQueryComplete, IQueryDeleted } from '@post/interfaces/post.interface';
 import { PostModel } from '@post/models/post.schema';
 import { IUserDocument } from '@user/interfaces/user.interface';
 import { UserModel } from '@user/models/user.schema';
@@ -15,6 +15,8 @@ class PostService {
     let postQuery = {};
     if (query?.imgId && query?.gifUrl) {
       postQuery = { $or: [{ imgId: { $ne: '' } }, { gifUrl: { $ne: '' } }] };
+    } else if (query?.videoId) {
+      postQuery = { $or: [{ videoId: { $ne: '' } }] };
     } else {
       postQuery = query;
     }
