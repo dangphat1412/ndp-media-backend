@@ -1,5 +1,5 @@
-import { IPostDocument } from '@post/interfaces/post.interface';
 import mongoose, { model, Model, Schema } from 'mongoose';
+import { IPostDocument } from '@post/interfaces/post.interface';
 
 const postSchema: Schema = new Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', index: true },
@@ -11,6 +11,8 @@ const postSchema: Schema = new Schema({
   bgColor: { type: String, default: '' },
   imgVersion: { type: String, default: '' },
   imgId: { type: String, default: '' },
+  videoVersion: { type: String, default: '' },
+  videoId: { type: String, default: '' },
   feelings: { type: String, default: '' },
   gifUrl: { type: String, default: '' },
   privacy: { type: String, default: '' },
