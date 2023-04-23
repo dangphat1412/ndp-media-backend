@@ -4,7 +4,6 @@ import cors from 'cors';
 import helmet from 'helmet';
 import hpp from 'hpp';
 import compression from 'compression';
-import cookierSession from 'cookie-session';
 import HTTP_STATUS from 'http-status-codes';
 import 'express-async-errors';
 import Logger from 'bunyan';
@@ -21,8 +20,9 @@ import { SocketIOUserHandler } from '@socket/user';
 import { SocketIOChatHandler } from '@socket/chat';
 import { SocketIONotificationHandler } from '@socket/notification';
 import { SocketIOImageHandler } from '@socket/image';
+import cookieSession from 'cookie-session';
 
-const SERVER_PORT = 5000;
+const SERVER_PORT = 8000;
 const log: Logger = config.createLogger('server');
 
 export class NdpMediaServer {
@@ -33,30 +33,30 @@ export class NdpMediaServer {
   }
 
   public start(): void {
-    this.securityMiddleWare(this.app);
+    this.securityMiddleware(this.app);
     this.standardMiddleware(this.app);
-    this.routeMiddleware(this.app);
+    this.routesMiddleware(this.app);
     this.apiMonitoring(this.app);
     this.globalErrorHandler(this.app);
     this.startServer(this.app);
   }
 
-  private securityMiddleWare(app: Application): void {
+  private securityMiddleware(app: Application): void {
     app.set('trust proxy', 1);
     app.use(
-      cookierSession({
+      cookieSession({
         name: 'session',
         keys: [config.SECRET_KEY_ONE!, config.SECRET_KEY_TWO!],
         maxAge: 24 * 7 * 3600000,
         secure: config.NODE_ENV !== 'development',
-        sameSite: 'none' // comment this line when running the server locally
+        // sameSite: 'none' // comment this line when running the server locally
       })
     );
     app.use(hpp());
     app.use(helmet());
     app.use(
       cors({
-        origin: '*',
+        origin: config.CLIENT_URL,
         credentials: true,
         optionsSuccessStatus: 200,
         methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
@@ -70,7 +70,7 @@ export class NdpMediaServer {
     app.use(urlencoded({ extended: true, limit: '50mb' }));
   }
 
-  private routeMiddleware(app: Application): void {
+  private routesMiddleware(app: Application): void {
     applicationRoutes(app);
   }
 
@@ -117,7 +117,7 @@ export class NdpMediaServer {
         methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
       }
     });
-    const pubClient = createClient({ url: process.env.REDIS_HOST });
+    const pubClient = createClient({ url: config.REDIS_HOST });
     const subClient = pubClient.duplicate();
     await Promise.all([pubClient.connect(), subClient.connect()]);
     io.adapter(createAdapter(pubClient, subClient));
